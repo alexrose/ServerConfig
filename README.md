@@ -3,7 +3,7 @@
 Just a small bash script, to manage a small web server(debian/ubuntu).
 
 ### Usage
-- `wget http://github/server.sh`
+- `wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/server.sh`
 - `chmod +x server.sh`
 - `sudo ./server.sh`
 
