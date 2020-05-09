@@ -219,7 +219,7 @@ function installDocker() {
 
 function installPortainer() {
   while true; do
-    if [ "$(docker ps -q -f name='portainer')" ]; then
+    if [ "$(docker ps -aq -f name='portainer')" ]; then
       if [ "$(docker ps -aq -f status=running -f name='portainer')" ]; then
         echo -e "${LIGHT_PURPLE}Portainer is already installed and running.${NO_COLOR}"
         echo -e "${ORANGE}Portainer URL: ${YELLOW}http://$HOSTNAME:9000${NO_COLOR}"
@@ -248,7 +248,7 @@ function installPortainer() {
 
 function installAdminer() {
   while true; do
-    if [ "$(docker ps -q -f name='adminer')" ]; then
+    if [ "$(docker ps -a -q -f name='adminer')" ]; then
 
       echo -e "${LIGHT_PURPLE}Adminer is already installed.${NO_COLOR}"
       echo -e "${ORANGE}Adminer URL: ${YELLOW}http://$HOSTNAME:8080${NO_COLOR}"
@@ -277,7 +277,7 @@ function installNginxAndLetsencrypt() {
     echo -e "${ORANGE}Create network if it doesn't exists...${NO_COLOR}"
     docker network create --driver bridge nginx_proxy || true
 
-    if [ "$(docker ps -q -f name='nginx-proxy')" ]; then
+    if [ "$(docker ps -a -q -f name='nginx-proxy')" ]; then
       echo -e "${LIGHT_PURPLE}Nginx-proxy is already installed.${NO_COLOR}"
     else
       echo -e "${ORANGE}Installing Nginx-proxy...${NO_COLOR}"
@@ -295,7 +295,7 @@ function installNginxAndLetsencrypt() {
       echo -e "${ORANGE}Nginx-proxy installed successfully.${NO_COLOR}"
     fi
 
-    if [ "$(docker ps -q -f name='nginx-letsencrypt')" ]; then
+    if [ "$(docker ps -a -q -f name='nginx-letsencrypt')" ]; then
       echo -e "${LIGHT_PURPLE}LetsEncrypt-nginx-proxy is already installed.${NO_COLOR}"
     else
       echo -e "${ORANGE}Installing LetsEncrypt-nginx-proxy...${NO_COLOR}"
@@ -321,11 +321,11 @@ function installNginxAndLetsencrypt() {
 
 function installWordpressInstance() {
   while true; do
-    if [ "$(docker ps -q -f name='nginx-proxy')" ]; then
+    if [ "$(docker ps -a -q -f name='nginx-proxy')" ]; then
       echo -en "${LIGHT_RED}Application name: ${NO_COLOR}"
       read -rp "" APP_NAME
 
-      if [ "$(docker ps -q -f name="${APP_NAME}")" ]; then
+      if [ "$(docker ps -a -q -f name="${APP_NAME}")" ]; then
         echo -e "${LIGHT_PURPLE}Application ${APP_NAME} already exists. Choose another name.${NO_COLOR}"
         echo ""
         return 0
