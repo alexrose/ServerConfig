@@ -246,6 +246,32 @@ function installPortainer() {
   done
 }
 
+function installAdminer() {
+  while true; do
+    if [ "$(docker ps -q -f name='adminer')" ]; then
+
+      echo -e "${LIGHT_PURPLE}Adminer is already installed.${NO_COLOR}"
+      echo -e "${ORANGE}Adminer URL: ${YELLOW}http://$HOSTNAME:8080${NO_COLOR}"
+      echo ""
+      return 0
+    fi
+
+    echo -e "${ORANGE}Installing Adminer...${NO_COLOR}"
+
+    docker run --detach \
+     --publish 8080:8080 \
+     --name=adminer \
+     --network nginx_proxy \
+     --restart=no \
+     adminer
+
+    echo -e "${ORANGE}Adminer installed successfully.${NO_COLOR}"
+    echo -e "${ORANGE}Portainer URL: ${YELLOW}http://$HOSTNAME:8080${NO_COLOR}"
+    echo ""
+    return 0
+  done
+}
+
 function installNginxAndLetsencrypt() {
   while true; do
     echo -e "${ORANGE}Create network if it doesn't exists...${NO_COLOR}"
@@ -393,8 +419,8 @@ function mainMenu() {
   echo "   31. Install Docker"
   echo "   32. Install Portainer"
   echo "   33. Install nginx-proxy and letsencrypt-nginx-proxy-companion"
-  echo "   34. Install WordPress
-  "
+  echo "   34. Install WordPress"
+  echo "   35. Install SQL Tool"
 
   while :; do
     echo -en "${LIGHT_RED}Select an option: ${NO_COLOR}"
@@ -414,6 +440,7 @@ function mainMenu() {
     32) installPortainer ;;
     33) installNginxAndLetsencrypt ;;
     34) installWordpressInstance ;;
+    35) installAdminer ;;
     esac
   done
 }
