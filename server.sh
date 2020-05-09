@@ -318,8 +318,8 @@ function installWordpressInstance() {
           --name "${APP_NAME}_db" \
           --network nginx_proxy \
           --restart always \
-          --env "MYSQL_USER=${APP_NAME}_dbu" \
-          --env "MYSQL_DATABASE=${APP_NAME}_dbn" \
+          --env "MYSQL_USER=${APP_NAME}_wpu" \
+          --env "MYSQL_DATABASE=${APP_NAME}_wpn" \
           --env "MYSQL_PASSWORD=${APP_PASS}" \
           --env "MYSQL_ROOT_PASSWORD=${APP_PASS}" \
           --volume "${APP_NAME}_db":/var/lib/mysql \
@@ -333,8 +333,8 @@ function installWordpressInstance() {
           --network nginx_proxy \
           --restart always \
           --env "WORDPRESS_DB_HOST=${APP_NAME}_db" \
-          --env "WORDPRESS_DB_USER=${APP_NAME}_dbu" \
-          --env "WORDPRESS_DB_NAME=${APP_NAME}_dbn" \
+          --env "WORDPRESS_DB_USER=${APP_NAME}_wpu" \
+          --env "WORDPRESS_DB_NAME=${APP_NAME}_wpn" \
           --env "WORDPRESS_DB_PASSWORD=${APP_PASS}" \
           --env "VIRTUAL_HOST=${APP_ADDRESS}" \
           --env "LETSENCRYPT_HOST=${APP_ADDRESS}" \
