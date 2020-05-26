@@ -344,7 +344,6 @@ function installWordpressInstance() {
           --name "${APP_NAME}_db" \
           --network nginx_proxy \
           --restart always \
-          --publish 3306:3306 \
           --env "MYSQL_USER=${APP_NAME}_wpu" \
           --env "MYSQL_DATABASE=${APP_NAME}_wpn" \
           --env "MYSQL_PASSWORD=${APP_PASS}" \
