@@ -291,7 +291,7 @@ function installNginxAndLetsencrypt() {
         --volume /etc/nginx/vhost.d \
         --volume /usr/share/nginx/html \
         --volume /var/run/docker.sock:/tmp/docker.sock:ro \
-        jwilder/nginx-proxy
+        jwilder/nginx-proxy:alpine
       echo -e "${ORANGE}Nginx-proxy installed successfully.${NO_COLOR}"
     fi
 
@@ -344,6 +344,7 @@ function installWordpressInstance() {
           --name "${APP_NAME}_db" \
           --network nginx_proxy \
           --restart always \
+          --publish 3306:3306 \
           --env "MYSQL_USER=${APP_NAME}_wpu" \
           --env "MYSQL_DATABASE=${APP_NAME}_wpn" \
           --env "MYSQL_PASSWORD=${APP_PASS}" \
@@ -358,6 +359,8 @@ function installWordpressInstance() {
           --name "${APP_NAME}" \
           --network nginx_proxy \
           --restart always \
+          --publish 80:80 \
+          --publish 443:443 \
           --env "WORDPRESS_DB_HOST=${APP_NAME}_db" \
           --env "WORDPRESS_DB_USER=${APP_NAME}_wpu" \
           --env "WORDPRESS_DB_NAME=${APP_NAME}_wpn" \
