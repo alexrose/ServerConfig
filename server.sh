@@ -359,8 +359,6 @@ function installWordpressInstance() {
           --name "${APP_NAME}" \
           --network nginx_proxy \
           --restart always \
-          --publish 80:80 \
-          --publish 443:443 \
           --env "WORDPRESS_DB_HOST=${APP_NAME}_db" \
           --env "WORDPRESS_DB_USER=${APP_NAME}_wpu" \
           --env "WORDPRESS_DB_NAME=${APP_NAME}_wpn" \
