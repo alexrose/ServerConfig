@@ -366,7 +366,7 @@ function installWordpressInstance() {
           --env "LETSENCRYPT_HOST=${APP_ADDRESS}" \
           --env "LETSENCRYPT_EMAIL=${APP_EMAIL}" \
           --volume "${APP_NAME}":/var/www/html \
-          wordpress
+          wordpress:php7.4-apache
         echo -e "${ORANGE}Wordpress installed successfully.${NO_COLOR}"
         echo ""
         return 0
