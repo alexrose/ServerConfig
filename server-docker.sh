@@ -28,8 +28,8 @@ function checkOS() {
 }
 
 function isSudoInstalled() {
-  if ! type "sudo2" >/dev/null 2>&1; then
-    retrun 0
+  if ! type "sudo" >/dev/null 2>&1; then
+    return 0
   fi
 }
 
