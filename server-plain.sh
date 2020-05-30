@@ -219,21 +219,6 @@ function addSwapPartition() {
 
 }
 
-function installCertbot() {
-  if type "certbot" >/dev/null 2>&1; then
-    echo -e "${LIGHT_PURPLE}Certbot is already installed. Just run: 'sudo certbot --nginx'${NO_COLOR}"
-    echo ""
-    return 0
-  fi
-
-  echo -e "${ORANGE}Installing Certbot...${NO_COLOR}"
-  apt -y install certbot python-certbot-nginx
-
-  echo -e "${ORANGE}Certbot installed successfully. Use 'sudo certbot --nginx'${NO_COLOR}"
-  echo ""
-  return 0
-}
-
 function installLemp() {
   if type "nginx" >/dev/null 2>&1; then
     echo -e "${LIGHT_PURPLE}Nginx is already installed.${NO_COLOR}"
@@ -252,6 +237,14 @@ function installLemp() {
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
 
+  if type "certbot" >/dev/null 2>&1; then
+    echo -e "${LIGHT_PURPLE}Certbot is already installed.${NO_COLOR}"
+  else
+    echo -e "${ORANGE}Installing Certbot...${NO_COLOR}"
+    apt -y install certbot python-certbot-nginx
+    echo -e "${ORANGE}Done.${NO_COLOR}"
+  fi
+
   if type "php" >/dev/null 2>&1; then
     echo -e "${LIGHT_PURPLE}PHP is already installed.${NO_COLOR}"
   else
@@ -266,40 +259,11 @@ function installLemp() {
     systemctl restart php"${PHP_VERSION}"-fpm
 
     echo 'client_max_body_size 128M;' | tee -a "/etc/nginx/conf.d/nginx.conf"
-
-    echo 'ssl_session_cache shared:SSL:5m; # holds approx 4000 sessions' | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo 'ssl_session_timeout 1h; # 1 hour during which sessions can be re-used.' | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo 'ssl_session_tickets off; #https://github.com/mozilla/server-side-tls/issues/135' | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo 'ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;' | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo 'ssl_buffer_size 4k;' | tee -a "/etc/nginx/conf.d/nginx.conf"
-
-
-#ssl_stapling on;
-#ssl_stapling_verify on;
-#ssl_trusted_certificate /path/to/your/CA/chain.pem;
-#resolver 8.8.8.8 8.8.4.4 valid=300s;
-#resolver_timeout 5s;
-#
-#ssl_protocols TLSv1.1 TLSv1.2 ;
-#ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
-#ssl_ecdh_curve secp384r1;
-#ssl_session_cache shared:SSL:5m;
-#ssl_session_timeout 24h;
-#ssl_session_tickets off;
-#ssl_buffer_size 4k;
-
-
-
-
-
+    echo 'ssl_session_tickets off;' | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
     systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
-}
-
-function installClean() {
-  //
 }
 
 function mainMenu() {
@@ -328,7 +292,10 @@ function mainMenu() {
   echo ""
   echo -e "${LIGHT_RED}## DEVELOPMENT${NO_COLOR}"
   echo "   31. Install LEMP(Nginx,MariaDB,PHP-FPM)"
-  echo "   32. Install Certbot"
+  echo "   32. Install clean"
+  echo "   33. Install WordPress"
+  echo "   34. Install Laravel"
+  echo "   35. Install Lumen"
 
   while :; do
     echo -en "${LIGHT_RED}Select an option: ${NO_COLOR}"
@@ -346,9 +313,11 @@ function mainMenu() {
     23) installFail2Ban ;;
     24) addSwapPartition ;;
     31) installLemp ;;
-    32) installCertbot ;;
+    32) installClean ;;
     33) installWordPress ;;
-    34) installClean ;;
+    34) installLaravel ;;
+    35) installLumen ;;
+
     esac
   done
 }
