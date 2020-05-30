@@ -4,17 +4,17 @@ server {
     listen [::]:80;
 
     # Application path
-    root /var/www/{default_server_folder};
+    root /var/www/{DEFAULT_SERVER_FOLDER};
 
     # Supported files extensions
     index index.php index.html;
 
     # Server name
-    server_name {default_server_name};
+    server_name {DEFAULT_SERVER_NAME};
 
     # Logs
-    access_log /var/log/nginx/{default_server_logname}_access.log;
-    error_log /var/log/nginx/{default_server_logname}_error.log;
+    access_log /var/log/nginx/{DEFAULT_SERVER_LOGNAME}_access.log;
+    error_log /var/log/nginx/{DEFAULT_SERVER_LOGNAME}_error.log;
 
     # Media files
     location ~* \.(gif|jpg|jpeg|png|ico|wmv|3gp|avi|mpg|mpeg|mp4|flv|mp3|mid|js|css|wml|swf|ttf|ttc|otf|eot|woff|woff2)$ {

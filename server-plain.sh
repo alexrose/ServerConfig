@@ -273,6 +273,7 @@ function installClean() {
     read -rp "" APP_FOLDER
 
     APP_PATH="/var/www/${APP_FOLDER}"
+    PHP_VERSION=`ls /etc/php`
     if [ -d "$APP_PATH" ]; then
       echo -e "${LIGHT_PURPLE}Application folder ${APP_FOLDER} already exists. Choose another name.${NO_COLOR}"
       echo ""
@@ -286,9 +287,10 @@ function installClean() {
 
       wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/default
       mv default "${APP_LOGNAME}"
-      sed -i "s/{default_server_folder}/${APP_FOLDER}/" "${APP_LOGNAME}"
-      sed -i "s/{default_server_name}/${APP_ADDRESS}/" "${APP_LOGNAME}"
-      sed -i "s/{default_server_logname}/${APP_LOGNAME}/" "${APP_LOGNAME}"
+      sed -i "s/{DEFAULT_SERVER_FOLDER}/${APP_FOLDER}/" "${APP_LOGNAME}"
+      sed -i "s/{DEFAULT_SERVER_NAME}/${APP_ADDRESS}/" "${APP_LOGNAME}"
+      sed -i "s/{DEFAULT_SERVER_LOGNAME}/${APP_LOGNAME}/" "${APP_LOGNAME}"
+      sed -i "s/{PHP_VERSION}/${PHP_VERSION}/" "${APP_LOGNAME}"
       mv "${APP_LOGNAME}" "/etc/nginx/sites-available/${APP_LOGNAME}"
       ln -s "/etc/nginx/sites-available/${APP_LOGNAME}" "/etc/nginx/sites-enabled/${APP_LOGNAME}"
       service nginx restart
