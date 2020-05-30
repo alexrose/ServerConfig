@@ -264,7 +264,7 @@ function installLemp() {
     echo -e "${LIGHT_PURPLE}PHP is already installed.${NO_COLOR}"
   else
     echo -e "${ORANGE}Installing PHP...${NO_COLOR}"
-    apt -y install php-fpm php-mysql php-curl php-xml php-mbstring php-imagick php-zip php-gd
+    apt -y install php-fpm php-mysql php-curl php-xml php-mbstring php-imagick php-zip php-gd php-redis
 
     usermod -aG www-data "$USER"
     echo "Europe/Bucharest" | sudo tee /etc/timezone
