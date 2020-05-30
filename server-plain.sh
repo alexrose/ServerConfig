@@ -100,6 +100,22 @@ function installUseful() {
       echo -e "${ORANGE}Done.${NO_COLOR}"
     fi
 
+    if type "htop" >/dev/null 2>&1; then
+      echo -e "${LIGHT_PURPLE}Htop is already installed.${NO_COLOR}"
+    else
+      echo -e "${ORANGE}Installing Htop...${NO_COLOR}"
+      apt -y install htop
+      echo -e "${ORANGE}Done.${NO_COLOR}"
+    fi
+
+    if type "netstat" >/dev/null 2>&1; then
+      echo -e "${LIGHT_PURPLE}Net-tools is already installed.${NO_COLOR}"
+    else
+      echo -e "${ORANGE}Installing Net-tools...${NO_COLOR}"
+      apt -y install net-tools
+      echo -e "${ORANGE}Done.${NO_COLOR}"
+    fi
+
     if isSudoInstalled; then
       echo -e "${LIGHT_PURPLE}Sudo is already installed.${NO_COLOR}"
     else
@@ -337,7 +353,7 @@ function mainMenu() {
   echo "   11. Update system"
   echo "   12. Update hostname"
   echo "   13. Clear MOTD"
-  echo "   14. Install useful(sudo, mc, git)"
+  echo "   14. Install useful(sudo, mc, git, htop, net-tools)"
   echo "   15. Show menu(alias: m)"
   echo "   16. Exit(alias: x)"
   echo ""
