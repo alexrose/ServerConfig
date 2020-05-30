@@ -252,6 +252,7 @@ function installLemp() {
     apt -y install php-fpm php-mysql
     usermod -aG www-data "$USER"
 
+    # shellcheck disable=SC2006
     PHP_VERSION=`ls /etc/php`
     echo "# Custom PHP settings" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
     echo "post_max_size = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
@@ -273,6 +274,7 @@ function installClean() {
     read -rp "" APP_FOLDER
 
     APP_PATH="/var/www/${APP_FOLDER}"
+    # shellcheck disable=SC2006
     PHP_VERSION=`ls /etc/php`
     if [ -d "$APP_PATH" ]; then
       echo -e "${LIGHT_PURPLE}Application folder ${APP_FOLDER} already exists. Choose another name.${NO_COLOR}"
@@ -306,8 +308,9 @@ function installClean() {
       certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
 
       echo -e "${ORANGE}Application configured successfully.${NO_COLOR}"
-      echo -e "${ORANGE}Sql username: ${SQL_USER}.${NO_COLOR}"
-      echo -e "${ORANGE}Sql password: ${SQL_PASS}.${NO_COLOR}"
+      echo -e "${ORANGE}Sql database: ${SQL_NAME}${NO_COLOR}"
+      echo -e "${ORANGE}Sql username: ${SQL_USER}${NO_COLOR}"
+      echo -e "${ORANGE}Sql password: ${SQL_PASS}${NO_COLOR}"
       echo ""
       return 0
     fi
