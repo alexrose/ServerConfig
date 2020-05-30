@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Define colors
-NO_COLOR='\033[0m'
-YELLOW='\033[1;33m'
-ORANGE='\033[0;33m'
-LIGHT_RED='\033[1;31m'
-LIGHT_PURPLE='\033[1;35m'
+NO_COLOR="\033[0m"
+YELLOW="\033[1;33m"
+ORANGE="\033[0;33m"
+LIGHT_RED="\033[1;31m"
+LIGHT_PURPLE="\033[1;35m"
 
 # initial checks
 function isRoot() {
@@ -180,8 +180,8 @@ function installFail2Ban() {
     echo -e "${ORANGE}Fail2ban is now installed.${NO_COLOR}"
 
     cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-    sed -i 's/bantime  = 10m/bantime  = 48h/' /etc/fail2ban/jail.local
-    sed -i 's/#ignorself = true/ignorself = true/' /etc/fail2ban/jail.local
+    sed -i "s/bantime  = 10m/bantime  = 48h/" /etc/fail2ban/jail.local
+    sed -i "s/#ignorself = true/ignorself = true/" /etc/fail2ban/jail.local
     sed -i "s/= ssh/= $PORT/" /etc/fail2ban/jail.local
     service fail2ban restart
     echo -e "${ORANGE}Fail2ban configured successfully.${NO_COLOR}"
@@ -191,7 +191,7 @@ function installFail2Ban() {
 }
 
 function addSwapPartition() {
-  swapon --show | grep '/swapfile' &>/dev/null
+  swapon --show | grep "/swapfile" &>/dev/null
   if [ $? == 0 ]; then
     echo -e "${LIGHT_PURPLE}Swap partition already configured.${NO_COLOR}"
     echo ""
@@ -206,11 +206,11 @@ function addSwapPartition() {
     mkswap /swapfile
     swapon /swapfile
     cp /etc/fstab /etc/fstab.bak
-    echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+    echo "/swapfile none swap sw 0 0" | tee -a /etc/fstab
     sysctl vm.swappiness=10
-    echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf
+    echo "vm.swappiness=10" | tee -a /etc/sysctl.conf
     sysctl vm.vfs_cache_pressure=50
-    echo 'vm.vfs_cache_pressure = 50' | tee -a /etc/sysctl.conf
+    echo "vm.vfs_cache_pressure = 50" | tee -a /etc/sysctl.conf
 
     echo -e "${ORANGE}Swap partition configured successfully.${NO_COLOR}"
     echo ""
@@ -252,18 +252,50 @@ function installLemp() {
     apt -y install php-fpm php-mysql
     usermod -aG www-data "$USER"
 
-    PHP_VERSION=ls /etc/php
-    echo '# Custom PHP settings' | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
-    echo 'post_max_size = 128M' | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
-    echo 'upload_max_filesize = 128M' | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
+    PHP_VERSION=`ls /etc/php`
+    echo "# Custom PHP settings" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
+    echo "post_max_size = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
+    echo "upload_max_filesize = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
     systemctl restart php"${PHP_VERSION}"-fpm
 
-    echo 'client_max_body_size 128M;' | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo 'ssl_session_tickets off;' | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
+    echo "client_max_body_size 128M;" | tee -a "/etc/nginx/conf.d/nginx.conf"
+    echo "ssl_session_tickets off;" | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
     systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
+}
+
+function installClean() {
+
+  while true; do
+    echo -en "${LIGHT_RED}Application folder(relative to /var/www/): ${NO_COLOR}"
+    read -rp "" APP_FOLDER
+
+    APP_PATH="/var/www/${APP_FOLDER}"
+    if [ -d "$APP_PATH" ]; then
+      echo -e "${LIGHT_PURPLE}Application folder ${APP_FOLDER} already exists. Choose another name.${NO_COLOR}"
+      echo ""
+      return 0
+    else
+      echo -en "${LIGHT_RED}Application URL(separated by space if multiple): ${NO_COLOR}"
+      read -rp "" APP_ADDRESS
+
+      echo -en "${LIGHT_RED}Application log filename: ${NO_COLOR}"
+      read -rp "" APP_LOGNAME
+
+      wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/default
+      mv default "${APP_LOGNAME}"
+      sed -i "s/{default_server_folder}/${APP_FOLDER}/" "${APP_LOGNAME}"
+      sed -i "s/{default_server_name}/${APP_ADDRESS}/" "${APP_LOGNAME}"
+      sed -i "s/{default_server_logname}/${APP_LOGNAME}/" "${APP_LOGNAME}"
+      mv "${APP_LOGNAME}" "/etc/nginx/sites-available/${APP_LOGNAME}"
+      ln -s "/etc/nginx/sites-available/${APP_LOGNAME}" "/etc/nginx/sites-enabled/${APP_LOGNAME}"
+      service nginx restart
+
+      certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
+    fi
+  done
 }
 
 function mainMenu() {
