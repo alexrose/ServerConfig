@@ -279,25 +279,35 @@ function installClean() {
       echo ""
       return 0
     else
+      echo -en "${LIGHT_RED}Application name(alphanumeric): ${NO_COLOR}"
+      read -rp "" APP_NAME
+
       echo -en "${LIGHT_RED}Application URL(separated by space if multiple): ${NO_COLOR}"
       read -rp "" APP_ADDRESS
 
-      echo -en "${LIGHT_RED}Application log filename: ${NO_COLOR}"
-      read -rp "" APP_LOGNAME
+      # shellcheck disable=SC2006
+      SQL_PASS=`tr -cd '[:alnum:]' < /dev/urandom | fold -w12 | head -n1`
+      SQL_NAME="${APP_NAME}_dbn"
+      SQL_USER="${APP_NAME}_dbu"
+      SQL_QUERY="CREATE DATABASE ${SQL_NAME};GRANT ALL ON ${SQL_NAME}.* TO '${SQL_USER}'@'localhost' IDENTIFIED BY '${SQL_PASS}' WITH GRANT OPTION;FLUSH PRIVILEGES;"
+      mkdir "${APP_PATH}"
+      echo "${SQL_QUERY}" | mariadb
 
       wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/default
-      mv default "${APP_LOGNAME}"
-      sed -i "s/{DEFAULT_SERVER_FOLDER}/${APP_FOLDER}/" "${APP_LOGNAME}"
-      sed -i "s/{DEFAULT_SERVER_NAME}/${APP_ADDRESS}/" "${APP_LOGNAME}"
-      sed -i "s/{DEFAULT_SERVER_LOGNAME}/${APP_LOGNAME}/" "${APP_LOGNAME}"
-      sed -i "s/{PHP_VERSION}/${PHP_VERSION}/" "${APP_LOGNAME}"
-      mv "${APP_LOGNAME}" "/etc/nginx/sites-available/${APP_LOGNAME}"
-      ln -s "/etc/nginx/sites-available/${APP_LOGNAME}" "/etc/nginx/sites-enabled/${APP_LOGNAME}"
+      mv default "${APP_NAME}"
+      sed -i "s/{DEFAULT_SERVER_FOLDER}/${APP_FOLDER}/" "${APP_NAME}"
+      sed -i "s/{DEFAULT_SERVER_NAME}/${APP_ADDRESS}/" "${APP_NAME}"
+      sed -i "s/{DEFAULT_SERVER_LOGNAME}/${APP_NAME}/" "${APP_NAME}"
+      sed -i "s/{PHP_VERSION}/${PHP_VERSION}/" "${APP_NAME}"
+      mv "${APP_NAME}" "/etc/nginx/sites-available/${APP_NAME}"
+      ln -s "/etc/nginx/sites-available/${APP_NAME}" "/etc/nginx/sites-enabled/${APP_NAME}"
       service nginx restart
 
       certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
 
       echo -e "${ORANGE}Application configured successfully.${NO_COLOR}"
+      echo -e "${ORANGE}Sql username: ${SQL_USER}.${NO_COLOR}"
+      echo -e "${ORANGE}Sql password: ${SQL_PASS}.${NO_COLOR}"
       echo ""
       return 0
     fi
