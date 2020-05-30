@@ -296,6 +296,10 @@ function installClean() {
       service nginx restart
 
       certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
+
+      echo -e "${ORANGE}Application configured successfully.${NO_COLOR}"
+      echo ""
+      return 0
     fi
   done
 }
