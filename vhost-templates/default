@@ -53,4 +53,12 @@ server {
     location ~ /\. {
         deny all;
     }
+
+    # Deny access to custom nginx.conf(if any)
+    location ~ nginx\.conf$ {
+        deny all;
+    }
+
+    # Include custom nginx.conf, if any
+    include /var/www/{DEFAULT_SERVER_FOLDER}/nginx[.]conf;
 }
