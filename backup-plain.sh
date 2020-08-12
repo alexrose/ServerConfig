@@ -17,3 +17,5 @@ DB_DUMP="$BACKUP_DIR""$DB_NAME"_$(date +"%Y-%m-%d-%H-%M").sql
 mysqldump -u $DB_USER -p$DB_PASS $DB_NAME > $DB_DUMP
 
 tar -czf "$BACKUP_DIR$1"_wpfiles_$(date +"%Y-%m-%d_%H-%M").tar.gz $APP_ROOT $DB_DUMP
+
+rm $DB_DUMP
