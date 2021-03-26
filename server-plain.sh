@@ -343,7 +343,7 @@ function installClean() {
     # shellcheck disable=SC2006
     AVAILABLE_PHP_VERSION=`ls /etc/php`
 
-    echo -en "${LIGHT_RED}Choose PHP version ${AVAILABLE_PHP_VERSION}: ${NO_COLOR}"
+    echo -en "${LIGHT_RED}Choose PHP version:\n ${AVAILABLE_PHP_VERSION}: ${NO_COLOR}"
     read -rp "" PHP_VERSION
 
     if [ -d "$APP_PATH" ]; then
