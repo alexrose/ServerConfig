@@ -234,12 +234,33 @@ function addSwapPartition() {
   fi
 }
 
+function installRedis() {
+  if type "redis-cli" >/dev/null 2>&1; then
+    echo -e "${LIGHT_PURPLE}Redis is already installed.${NO_COLOR}"
+  else
+    sudo apt -y install redis-server
+    sudo cp /etc/redis/redis.conf /etc/redis/redis.backup
+    sed -i "s/supervised no/supervised systemd/" /etc/redis/redis.conf
+    sed -i -e '$amaxmemory 2048mb' /etc/redis/redis.conf
+    sed -i -e '$amaxmemory-policy allkeys-lru' /etc/redis/redis.conf
+
+    systemctl restart redis
+  fi
+}
+
 function installLemp() {
   if type "nginx" >/dev/null 2>&1; then
     echo -e "${LIGHT_PURPLE}Nginx is already installed.${NO_COLOR}"
   else
     echo -e "${ORANGE}Installing Nginx...${NO_COLOR}"
     apt -y install nginx
+    echo -e "${ORANGE}Done.${NO_COLOR}"
+
+    echo -e "${ORANGE}Generating a self signed certificate...${NO_COLOR}"
+    sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
+    sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+    sudo echo "ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;" | tee -a "/etc/nginx/snippets/self-signed.conf"
+    sudo echo "ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;" | tee -a "/etc/nginx/snippets/self-signed.conf"
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
 
@@ -260,28 +281,44 @@ function installLemp() {
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
 
+  echo -e "${ORANGE}Adding PHP repository...${NO_COLOR}"
+  sudo apt -y install lsb-release apt-transport-https ca-certificates
+  sudo wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
+  echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
+  updateSystem
+  echo -e "${ORANGE}Done.${NO_COLOR}"
+
   if type "php" >/dev/null 2>&1; then
     echo -e "${LIGHT_PURPLE}PHP is already installed.${NO_COLOR}"
   else
     echo -e "${ORANGE}Installing PHP...${NO_COLOR}"
-    apt -y install php-fpm php-mysql php-curl php-xml php-mbstring php-imagick php-zip php-gd php-redis php-tidy
+    apt -y install php7.4-{fpm,cli,curl,common,gd,igbinary,imagick,json,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
+    apt -y install php8.0-{fpm,cli,curl,common,gd,igbinary,imagick,json,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
 
     usermod -aG www-data "$USER"
     echo "Europe/Bucharest" | sudo tee /etc/timezone
     sudo dpkg-reconfigure --frontend noninteractive tzdata
 
     # shellcheck disable=SC2006
-    PHP_VERSION=`ls /etc/php`
-    echo "# Custom PHP settings" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
-    echo "post_max_size = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
-    echo "upload_max_filesize = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/php.ini"
-    systemctl restart php"${PHP_VERSION}"-fpm
+    INSTALLED_PHP_VERSION=`ls /etc/php`
+    IFS=' ' read -r -a PHP_VERSIONS <<< "${INSTALLED_PHP_VERSION}"
 
+    for PHP_VERSION in "${PHP_VERSIONS[@]}"
+    do
+      echo "# Custom PHP settings" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "post_max_size = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "upload_max_filesize = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
+      systemctl restart php"${PHP_VERSION}"-fpm
+    done
+
+    echo "server_tokens off;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "client_max_body_size 128M;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "ssl_session_tickets off;" | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
     echo "fastcgi_cache_path /etc/nginx-cache levels=1:2 keys_zone=phpcache:100m inactive=60m;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "fastcgi_cache_key '$scheme$request_method$host$request_uri';" | tee -a "/etc/nginx/conf.d/nginx.conf"
 
+    wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/vhost-default
+    mv vhost-default "/etc/nginx/sites-available/default"
     systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
@@ -296,7 +333,11 @@ function installClean() {
 
     APP_PATH="/var/www/${APP_FOLDER}"
     # shellcheck disable=SC2006
-    PHP_VERSION=`ls /etc/php`
+    AVAILABLE_PHP_VERSION=`ls /etc/php`
+
+    echo -en "${LIGHT_RED}Choose PHP version ${AVAILABLE_PHP_VERSION}: ${NO_COLOR}"
+    read -rp "" PHP_VERSION
+
     if [ -d "$APP_PATH" ]; then
       echo -e "${LIGHT_PURPLE}Application folder ${APP_FOLDER} already exists. Choose another name.${NO_COLOR}"
       echo ""
@@ -317,8 +358,8 @@ function installClean() {
       chown -R www-data:www-data "${APP_PATH}"
       echo "${SQL_QUERY}" | mariadb
 
-      wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/default
-      mv default "${APP_NAME}"
+      wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/vhost-template
+      mv vhost-template "${APP_NAME}"
       sed -i "s/{DEFAULT_SERVER_FOLDER}/${APP_FOLDER}/" "${APP_NAME}"
       sed -i "s/{DEFAULT_SERVER_NAME}/${APP_ADDRESS}/" "${APP_NAME}"
       sed -i "s/{DEFAULT_SERVER_LOGNAME}/${APP_NAME}/" "${APP_NAME}"
@@ -364,8 +405,9 @@ function mainMenu() {
   echo "   24. Add swap partition"
   echo ""
   echo -e "${LIGHT_RED}## DEVELOPMENT${NO_COLOR}"
+  echo "   30. Install Redis"
   echo "   31. Install LEMP(Nginx,MariaDB,PHP-FPM)"
-  echo "   32. Install clean"
+  echo "   32. Install empty environment"
   echo "   33. Install WordPress"
   echo "   34. Install Laravel"
   echo "   35. Install Lumen"
@@ -385,6 +427,7 @@ function mainMenu() {
     22) secureSSH ;;
     23) installFail2Ban ;;
     24) addSwapPartition ;;
+    30) installRedis ;;
     31) installLemp ;;
     32) installClean ;;
     33) installWordPress ;;
