@@ -309,17 +309,13 @@ function installLemp() {
     echo "Europe/Bucharest" | sudo tee /etc/timezone
     sudo dpkg-reconfigure --frontend noninteractive tzdata
 
-    # shellcheck disable=SC2006
-    INSTALLED_PHP_VERSION=`ls /etc/php`
-    IFS=' ' read -r -a PHP_VERSIONS <<< "${INSTALLED_PHP_VERSION}"
-
-    for PHP_VERSION in "${PHP_VERSIONS[@]}"
+    for PHP_VERSION in /etc/php/*/ ;
     do
-      echo "# Custom PHP settings" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
-      echo "post_max_size = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
-      echo "upload_max_filesize = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
-      echo "max_file_uploads = 20M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
-      echo "zend.exception_ignore_args = On" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "# Custom PHP settings" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "post_max_size = 128M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "upload_max_filesize = 128M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "max_file_uploads = 20M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "zend.exception_ignore_args = On" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       systemctl restart php"${PHP_VERSION}"-fpm
     done
 
@@ -425,7 +421,7 @@ function mainMenu() {
   echo "   35. Install Lumen"
 
   while :; do
-    echo -en "${LIGHT_RED}Select an option: ${NO_COLOR}"
+    echo -en "${LIGHT_RED}Select an option([m]enu e[x]it): ${NO_COLOR}"
     read -rp "" MENU_OPTION
 
     case $MENU_OPTION in
