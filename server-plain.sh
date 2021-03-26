@@ -254,7 +254,7 @@ function installRedis() {
     sed -i -e '$amaxmemory 2048mb' /etc/redis/redis.conf
     sed -i -e '$amaxmemory-policy allkeys-lru' /etc/redis/redis.conf
 
-    systemctl restart redis
+    service redis restart
   fi
 }
 
@@ -303,7 +303,7 @@ function installLemp() {
   else
     echo -e "${ORANGE}Installing PHP...${NO_COLOR}"
     apt -y install php7.4-{fpm,cli,curl,common,gd,igbinary,imagick,json,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
-    apt -y install php8.0-{fpm,cli,curl,common,gd,igbinary,imagick,json,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
+    apt -y install php8.0-{fpm,cli,curl,common,gd,igbinary,imagick,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
 
     usermod -aG www-data "$USER"
     echo "Europe/Bucharest" | sudo tee /etc/timezone
@@ -327,11 +327,11 @@ function installLemp() {
     echo "client_max_body_size 128M;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "ssl_session_tickets off;" | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
     echo "fastcgi_cache_path /etc/nginx-cache levels=1:2 keys_zone=phpcache:100m inactive=60m;" | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo "fastcgi_cache_key '$scheme$request_method$host$request_uri';" | tee -a "/etc/nginx/conf.d/nginx.conf"
+    echo "fastcgi_cache_key '\$scheme\$request_method\$host\$request_uri';" | tee -a "/etc/nginx/conf.d/nginx.conf"
 
     wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/vhost-default
     mv vhost-default "/etc/nginx/sites-available/default"
-    systemctl restart nginx
+    service nginx restart
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
