@@ -124,6 +124,16 @@ function installUseful() {
       echo -e "${ORANGE}Done.${NO_COLOR}"
     fi
 
+    if type "openssl" >/dev/null 2>&1; then
+      echo -e "${LIGHT_PURPLE}OpenSSL is already installed.${NO_COLOR}"
+    else
+      echo -e "${ORANGE}Installing OpenSSL...${NO_COLOR}"
+      apt -y install openssl
+      echo -e "${ORANGE}Done.${NO_COLOR}"
+    fi
+
+    apt -y install gnupg
+
     echo ""
     return 0
   done
@@ -308,6 +318,8 @@ function installLemp() {
       echo "# Custom PHP settings" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "post_max_size = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "upload_max_filesize = 128M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "max_file_uploads = 20M" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
+      echo "zend.exception_ignore_args = On" | tee -a "/etc/php/${PHP_VERSION}/fpm/conf.d/live.ini"
       systemctl restart php"${PHP_VERSION}"-fpm
     done
 
