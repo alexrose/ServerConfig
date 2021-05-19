@@ -35,11 +35,6 @@ server {
 
     # Enable php-fpm
     location ~ [^/]\.php(/|$) {
-        fastcgi_cache phpcache;
-        fastcgi_cache_valid 200 30m;
-        fastcgi_cache_methods GET HEAD;
-        add_header X-Fastcgi-Cache $upstream_cache_status;
-
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php{PHP_VERSION}-fpm.sock;
     }

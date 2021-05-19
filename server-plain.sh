@@ -322,8 +322,6 @@ function installLemp() {
     echo "server_tokens off;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "client_max_body_size 128M;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "ssl_session_tickets off;" | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
-    echo "fastcgi_cache_path /etc/nginx-cache levels=1:2 keys_zone=phpcache:100m inactive=60m;" | tee -a "/etc/nginx/conf.d/nginx.conf"
-    echo "fastcgi_cache_key '\$scheme\$request_method\$host\$request_uri';" | tee -a "/etc/nginx/conf.d/nginx.conf"
 
     wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/vhost-default
     mv vhost-default "/etc/nginx/sites-available/default"
