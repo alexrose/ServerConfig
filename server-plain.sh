@@ -28,10 +28,10 @@ function checkOS() {
 }
 
 function isSudoInstalled() {
-  if ! type "sudo" >/dev/null 2>&1; then
-    return 0
-  else
+  if type "sudo" >/dev/null 2>&1; then
     return 1
+  else
+    return 0
   fi
 }
 
@@ -149,7 +149,7 @@ function addNewUser() {
   while true; do
     echo -e "${ORANGE}Check if sudo is installed...${NO_COLOR}"
 
-    if ! isSudoInstalled; then
+    if !isSudoInstalled; then
       echo -e "${LIGHT_PURPLE}Sorry, you need to install sudo before adding a new user.${NO_COLOR}"
       echo ""
       return 0
@@ -283,13 +283,13 @@ function installLemp() {
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
 
-  if type "certbot" >/dev/null 2>&1; then
-    echo -e "${LIGHT_PURPLE}Certbot is already installed.${NO_COLOR}"
-  else
-    echo -e "${ORANGE}Installing Certbot...${NO_COLOR}"
-    apt -y install certbot python-certbot-nginx
-    echo -e "${ORANGE}Done.${NO_COLOR}"
-  fi
+  # if type "certbot" >/dev/null 2>&1; then
+  #   echo -e "${LIGHT_PURPLE}Certbot is already installed.${NO_COLOR}"
+  # else
+  #   echo -e "${ORANGE}Installing Certbot...${NO_COLOR}"
+  #   apt -y install certbot python-certbot-nginx
+  #   echo -e "${ORANGE}Done.${NO_COLOR}"
+  # fi
 
   echo -e "${ORANGE}Adding PHP repository...${NO_COLOR}"
   sudo apt -y install lsb-release apt-transport-https ca-certificates
@@ -318,6 +318,7 @@ function installLemp() {
       echo "max_file_uploads = 20M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "zend.exception_ignore_args = On" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       systemctl restart php"${PHP_VERSION}"-fpm
+      systemctl disable apache2 && systemctl stop apache2
     done
 
     echo "server_tokens off;" | tee -a "/etc/nginx/conf.d/nginx.conf"
@@ -374,7 +375,7 @@ function installClean() {
       mv "${APP_NAME}" "/etc/nginx/sites-available/${APP_NAME}"
       ln -s "/etc/nginx/sites-available/${APP_NAME}" "/etc/nginx/sites-enabled/${APP_NAME}"
 
-      # generate self signed certificate
+      # generate self signed certificate instead of certbot
       # certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
       sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/nginx/ssl/${APP_NAME}.key -out /etc/nginx/ssl/${APP_NAME}.crt
 
