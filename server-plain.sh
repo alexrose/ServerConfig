@@ -64,7 +64,7 @@ function updateHostname() {
     read -rp "" NEW_HOSTNAME
 
     echo "$NEW_HOSTNAME" >/etc/hostname
-    sed -i "s/$HOSTNAME/$NEW_HOSTNAME/" /etc/hosts
+    sed -i "s/127.0.0.1 localhost/127.0.0.1 localhost $NEW_HOSTNAME/" /etc/hosts
     hostname "$NEW_HOSTNAME"
     echo -e "${ORANGE}Hostname updated successfully.${NO_COLOR}"
     echo ""
