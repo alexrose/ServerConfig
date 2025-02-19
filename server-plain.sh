@@ -27,14 +27,6 @@ function checkOS() {
   fi
 }
 
-function isSudoInstalled() {
-  if type "sudo" >/dev/null 2>&1; then
-    return 1
-  else
-    return 0
-  fi
-}
-
 function initialCheck() {
   if ! isRoot; then
     echo -e "${LIGHT_PURPLE}Sorry, you need to run this script as root.${NO_COLOR}"
@@ -116,7 +108,7 @@ function installUseful() {
       echo -e "${ORANGE}Done.${NO_COLOR}"
     fi
 
-    if isSudoInstalled; then
+    if type "sudo" >/dev/null 2>&1; then
       echo -e "${LIGHT_PURPLE}Sudo is already installed.${NO_COLOR}"
     else
       echo -e "${ORANGE}Installing Sudo...${NO_COLOR}"
@@ -149,7 +141,7 @@ function addNewUser() {
   while true; do
     echo -e "${ORANGE}Check if sudo is installed...${NO_COLOR}"
 
-    if isSudoInstalled; then
+    if type "sudo" >/dev/null 2>&1; then
       echo -e "${ORANGE}Sudo is installed. Let's add a new system user.${NO_COLOR}"
 
       echo -en "${LIGHT_RED}New username: ${NO_COLOR}"
