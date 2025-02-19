@@ -320,7 +320,6 @@ function installLemp() {
     wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/templates/vhost-default
     mv vhost-default "/etc/nginx/sites-available/default"
     systemctl restart php"${PHP_VERSION_NAME}"-fpm
-    systemctl disable apache2 && systemctl stop apache2
     systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
