@@ -384,6 +384,25 @@ function installClean() {
   done
 }
 
+function installMqtt() {
+  if type "mosquitto" >/dev/null 2>&1; then
+    echo -e "${LIGHT_PURPLE}Mosquitto is already installed.${NO_COLOR}"
+  else
+    echo -e "${ORANGE}Installing Mosquitto...${NO_COLOR}"
+    apt -y install mosquitto mosquitto-clients
+
+    echo -e "${ORANGE}Setting up authentication${NO_COLOR}"
+    echo -en "${LIGHT_RED}Provide an username: ${NO_COLOR}"
+    read -rp "" MQTT_USER
+    
+    mosquitto_passwd -c /etc/mosquitto/.passwd "${MQTT_USER}"
+    wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/templates/mosquitto.conf
+    mv mosquitto.conf "/etc/mosquitto/conf.d/default.conf"
+    systemctl restart mosquitto
+    echo -e "${ORANGE}Done.${NO_COLOR}"
+  fi
+}
+
 function mainMenu() {
   clear >$(tty)
   echo -e "${ORANGE}"
@@ -412,6 +431,7 @@ function mainMenu() {
   echo "   30. Install Redis"
   echo "   31. Install LEMP(Nginx,MariaDB,PHP-FPM)"
   echo "   32. Install empty environment"
+  echo "   33. Install MQTT"
 
   while :; do
     echo -en "${LIGHT_RED}Select an option([m]enu e[x]it): ${NO_COLOR}"
@@ -431,6 +451,7 @@ function mainMenu() {
     30) installRedis ;;
     31) installLemp ;;
     32) installClean ;;
+    33) installMqtt ;;
 
     esac
   done
