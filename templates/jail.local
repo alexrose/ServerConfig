@@ -4,3 +4,11 @@ ignorself = true
 [sshd]
 enabled = true
 port = 22
+
+[wordpress]
+enabled = true
+filter = wordpress
+logpath = /var/log/auth.log
+maxretry = 3
+port = http,https
+bantime = 30m
