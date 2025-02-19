@@ -149,23 +149,23 @@ function addNewUser() {
   while true; do
     echo -e "${ORANGE}Check if sudo is installed...${NO_COLOR}"
 
-    if !isSudoInstalled; then
+    if isSudoInstalled; then
+      echo -e "${ORANGE}Sudo is installed. Let's add a new system user.${NO_COLOR}"
+
+      echo -en "${LIGHT_RED}New username: ${NO_COLOR}"
+      read -rp "" USERNAME
+
+      adduser "$USERNAME"
+      usermod -aG sudo "$USERNAME"
+
+      echo -e "${ORANGE}User '$USERNAME' added successfully.${NO_COLOR}"
+      echo ""
+      return 0
+    else
       echo -e "${LIGHT_PURPLE}Sorry, you need to install sudo before adding a new user.${NO_COLOR}"
       echo ""
       return 0
-    fi
-
-    echo -e "${ORANGE}Sudo is installed. Let's add a new system user.${NO_COLOR}"
-
-    echo -en "${LIGHT_RED}New username: ${NO_COLOR}"
-    read -rp "" USERNAME
-
-    adduser "$USERNAME"
-    usermod -aG sudo "$USERNAME"
-
-    echo -e "${ORANGE}User '$USERNAME' added successfully.${NO_COLOR}"
-    echo ""
-    return 0
+    fi    
   done
 }
 
