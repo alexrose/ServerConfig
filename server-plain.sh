@@ -263,6 +263,7 @@ function installLemp() {
     sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
     sudo echo "ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;" | tee -a "/etc/nginx/snippets/self-signed.conf"
     sudo echo "ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;" | tee -a "/etc/nginx/snippets/self-signed.conf"
+    sudo mkdir /etc/nginx/ssl
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
 
@@ -304,13 +305,12 @@ function installLemp() {
 
     for PHP_VERSION in /etc/php/*/ ;
     do
+      PHP_VERSION_NAME=$(basename "$PHP_VERSION")
       echo "# Custom PHP settings" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "post_max_size = 128M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "upload_max_filesize = 128M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "max_file_uploads = 20M" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
       echo "zend.exception_ignore_args = On" | tee -a "${PHP_VERSION}/fpm/conf.d/live.ini"
-      systemctl restart php"${PHP_VERSION}"-fpm
-      systemctl disable apache2 && systemctl stop apache2
     done
 
     echo "server_tokens off;" | tee -a "/etc/nginx/conf.d/nginx.conf"
@@ -319,6 +319,8 @@ function installLemp() {
 
     wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/templates/vhost-default
     mv vhost-default "/etc/nginx/sites-available/default"
+    systemctl restart php"${PHP_VERSION_NAME}"-fpm
+    systemctl disable apache2 && systemctl stop apache2
     systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
@@ -335,7 +337,7 @@ function installClean() {
     # shellcheck disable=SC2006
     AVAILABLE_PHP_VERSION=`ls /etc/php`
 
-    echo -en "${LIGHT_RED}Choose PHP version:\n ${AVAILABLE_PHP_VERSION}: ${NO_COLOR}"
+    echo -en "${LIGHT_RED}Choose PHP version:\n${AVAILABLE_PHP_VERSION}: ${NO_COLOR}"
     read -rp "" PHP_VERSION
 
     if [ -d "$APP_PATH" ]; then
@@ -411,9 +413,6 @@ function mainMenu() {
   echo "   30. Install Redis"
   echo "   31. Install LEMP(Nginx,MariaDB,PHP-FPM)"
   echo "   32. Install empty environment"
-  echo "   33. Install WordPress"
-  echo "   34. Install Laravel"
-  echo "   35. Install Lumen"
 
   while :; do
     echo -en "${LIGHT_RED}Select an option([m]enu e[x]it): ${NO_COLOR}"
@@ -433,9 +432,6 @@ function mainMenu() {
     30) installRedis ;;
     31) installLemp ;;
     32) installClean ;;
-    33) installWordPress ;;
-    34) installLaravel ;;
-    35) installLumen ;;
 
     esac
   done
