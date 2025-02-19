@@ -1,0 +1,6 @@
+bantime  = 48h
+ignorself = true
+
+[sshd]
+enabled = true
+port = 22

@@ -181,7 +181,7 @@ function secureSSH() {
     sed -i "s/#Port 22/Port $PORT/" /etc/ssh/sshd_config
     echo -e "${ORANGE}Disable ssh access for root...${NO_COLOR}"
     sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
-    service ssh restart
+    systemctl restart ssh
 
     echo -e "${ORANGE}SSH secured.${NO_COLOR}"
     echo ""
@@ -205,11 +205,11 @@ function installFail2Ban() {
     apt -y install fail2ban
     echo -e "${ORANGE}Fail2ban is now installed.${NO_COLOR}"
 
-    cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-    sed -i "s/bantime  = 10m/bantime  = 48h/" /etc/fail2ban/jail.local
-    sed -i "s/#ignorself = true/ignorself = true/" /etc/fail2ban/jail.local
-    sed -i "s/= ssh/= $PORT/" /etc/fail2ban/jail.local
-    service fail2ban restart
+    wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/templates/jail.local
+    mv jail.local "/etc/fail2ban/jail.local"
+
+    sed -i "s/= 22/= $PORT/" /etc/fail2ban/jail.local
+    systemctl restart fail2ban
     echo -e "${ORANGE}Fail2ban configured successfully.${NO_COLOR}"
     echo ""
     return 0
@@ -250,11 +250,11 @@ function installRedis() {
   else
     sudo apt -y install redis-server
     sudo cp /etc/redis/redis.conf /etc/redis/redis.backup
-    sed -i "s/supervised no/supervised systemd/" /etc/redis/redis.conf
+    sed -i -e '$asupervised systemd' /etc/redis/redis.conf
     sed -i -e '$amaxmemory 2048mb' /etc/redis/redis.conf
     sed -i -e '$amaxmemory-policy allkeys-lru' /etc/redis/redis.conf
 
-    service redis restart
+    systemctl restart redis
   fi
 }
 
@@ -293,17 +293,18 @@ function installLemp() {
 
   echo -e "${ORANGE}Adding PHP repository...${NO_COLOR}"
   sudo apt -y install lsb-release apt-transport-https ca-certificates
-  sudo wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
+  wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
   echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
-  updateSystem
+  sudo apt update -y
+
   echo -e "${ORANGE}Done.${NO_COLOR}"
 
   if type "php" >/dev/null 2>&1; then
     echo -e "${LIGHT_PURPLE}PHP is already installed.${NO_COLOR}"
   else
     echo -e "${ORANGE}Installing PHP...${NO_COLOR}"
-    apt -y install php7.4-{fpm,cli,curl,common,gd,igbinary,imagick,json,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
-    apt -y install php8.0-{fpm,cli,curl,common,gd,igbinary,imagick,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
+    apt -y install php8.3-{fpm,cli,curl,common,gd,igbinary,imagick,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
+    apt -y install php8.4-{fpm,cli,curl,common,gd,igbinary,imagick,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
 
     usermod -aG www-data "$USER"
     echo "Europe/Bucharest" | sudo tee /etc/timezone
@@ -323,9 +324,9 @@ function installLemp() {
     echo "client_max_body_size 128M;" | tee -a "/etc/nginx/conf.d/nginx.conf"
     echo "ssl_session_tickets off;" | tee -a "/etc/nginx/conf.d/nginx.conf" #https://github.com/mozilla/server-side-tls/issues/135
 
-    wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/vhost-default
+    wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/templates/vhost-default
     mv vhost-default "/etc/nginx/sites-available/default"
-    service nginx restart
+    systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
   fi
@@ -364,7 +365,7 @@ function installClean() {
       chown -R www-data:www-data "${APP_PATH}"
       echo "${SQL_QUERY}" | mariadb
 
-      wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/vhost-templates/vhost-template
+      wget https://raw.githubusercontent.com/alexrose/ServerConfig/master/templates/vhost-template
       mv vhost-template "${APP_NAME}"
       sed -i "s/{DEFAULT_SERVER_FOLDER}/${APP_FOLDER}/" "${APP_NAME}"
       sed -i "s/{DEFAULT_SERVER_NAME}/${APP_ADDRESS}/" "${APP_NAME}"
@@ -372,9 +373,12 @@ function installClean() {
       sed -i "s/{PHP_VERSION}/${PHP_VERSION}/" "${APP_NAME}"
       mv "${APP_NAME}" "/etc/nginx/sites-available/${APP_NAME}"
       ln -s "/etc/nginx/sites-available/${APP_NAME}" "/etc/nginx/sites-enabled/${APP_NAME}"
-      service nginx restart
 
-      certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
+      # generate self signed certificate
+      # certbot --nginx --agree-tos -d "${APP_ADDRESS// /,}"
+      sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/nginx/ssl/${APP_NAME}.key -out /etc/nginx/ssl/${APP_NAME}.crt
+
+      systemctl restart nginx
 
       echo -e "${ORANGE}Application configured successfully.${NO_COLOR}"
       echo -e "${ORANGE}Sql database: ${SQL_NAME}${NO_COLOR}"

@@ -56,4 +56,10 @@ server {
 
     # Include custom nginx.conf, if any
     include /var/www/{DEFAULT_SERVER_FOLDER}/nginx[.]conf;
+
+    # Enable SSL
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    ssl_certificate /etc/nginx/ssl/{DEFAULT_SERVER_LOGNAME}.crt;
+    ssl_certificate_key /etc/nginx/ssl/{DEFAULT_SERVER_LOGNAME}.key;
 }
