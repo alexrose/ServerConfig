@@ -124,6 +124,14 @@ function installUseful() {
       echo -e "${ORANGE}Done.${NO_COLOR}"
     fi
 
+    if type "crontab" >/dev/null 2>&1; then
+      echo -e "${LIGHT_PURPLE}Cron is already installed.${NO_COLOR}"
+    else
+      echo -e "${ORANGE}Installing Cron...${NO_COLOR}"
+      apt -y install cron
+      echo -e "${ORANGE}Done.${NO_COLOR}"
+    fi
+
     apt -y install gnupg
 
     echo ""
