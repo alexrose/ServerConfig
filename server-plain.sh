@@ -304,8 +304,8 @@ function installLemp() {
     echo -e "${LIGHT_PURPLE}PHP is already installed.${NO_COLOR}"
   else
     echo -e "${ORANGE}Installing PHP...${NO_COLOR}"
-    apt -y install php8.3-{fpm,cli,curl,common,gd,igbinary,imagick,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
-    apt -y install php8.4-{fpm,cli,curl,common,gd,igbinary,imagick,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
+    apt -y install php8.3-{fpm,cli,curl,common,gd,igbinary,imagick,intl,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
+    apt -y install php8.4-{fpm,cli,curl,common,gd,igbinary,imagick,intl,mbstring,mysql,opcache,readline,redis,tidy,xml,xsl,zip}
 
     usermod -aG www-data "$USER"
     echo "Europe/Bucharest" | sudo tee /etc/timezone
@@ -331,6 +331,13 @@ function installLemp() {
     systemctl restart nginx
 
     echo -e "${ORANGE}Done.${NO_COLOR}"
+  fi
+
+  if type "composer" >/dev/null 2>&1; then
+    echo -e "${LIGHT_PURPLE}PHP is already installed.${NO_COLOR}"
+  else
+    wget -O composer-setup.php https://getcomposer.org/installer
+    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
   fi
 }
 
