@@ -418,6 +418,16 @@ function installMqtt() {
   fi
 }
 
+function installNodejs() {
+  if type "node" >/dev/null 2>&1; then
+    echo -e "${LIGHT_PURPLE}NodeJS is already installed.${NO_COLOR}"
+  else
+    curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
+    bash nodesource_setup.sh
+    apt install -y nodejs
+  fi
+}
+
 function mainMenu() {
   clear >$(tty)
   echo -e "${ORANGE}"
@@ -447,6 +457,7 @@ function mainMenu() {
   echo "   31. Install LEMP(Nginx,MariaDB,PHP-FPM)"
   echo "   32. Install empty environment"
   echo "   33. Install MQTT"
+  echo "   34. Install Nodejs"
 
   while :; do
     echo -en "${LIGHT_RED}Select an option([m]enu e[x]it): ${NO_COLOR}"
@@ -467,6 +478,7 @@ function mainMenu() {
     31) installLemp ;;
     32) installClean ;;
     33) installMqtt ;;
+    34) installNodejs ;;
 
     esac
   done
